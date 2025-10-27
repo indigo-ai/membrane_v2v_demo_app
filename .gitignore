@@ -35,3 +35,6 @@ membrane_v2v_demo_app-*.tar
 npm-debug.log
 /assets/node_modules/
 
+# Secrets under config
+/config/*.secret.exs
+

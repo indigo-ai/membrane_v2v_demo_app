@@ -18,6 +18,7 @@ defmodule MembraneV2vDemoAppWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
+    live "/call", CallLive
   end
 
   # Other scopes may use custom stacks.
