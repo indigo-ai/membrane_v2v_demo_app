@@ -116,7 +116,7 @@ defmodule MembraneV2vDemoAppWeb.CallLive do
       if socket.assigns.pipeline_pid do
         # GenServer.stop(socket.assigns.pipeline_pid)
         Membrane.Pipeline.terminate(
-          Pento.Call.Pipeline
+          MembraneV2vDemoApp.Call.Pipeline
           # pipeline: socket.assigns.pipeline_pid,
           # force?: true
         )
