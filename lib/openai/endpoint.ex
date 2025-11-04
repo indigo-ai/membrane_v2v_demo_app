@@ -373,7 +373,7 @@ defmodule MembraneOpenAI.OpenAIEndpoint do
           state: state
         } = tool_calling
       ) do
-    Membrane.Logger.debug(
+    Membrane.Logger.info(
       "[OpenAi] call_get_next_response_from_supervisor: #{inspect(tool_calling)}"
     )
 
@@ -392,17 +392,18 @@ defmodule MembraneOpenAI.OpenAIEndpoint do
     }
 
     # Make HTTP POST request to the external service
-    url = "http://localhost:4001/rest/trigger/sync/f1f18a18-ea8a-481b-a3f0-9c6dbd8b0d4f"
+    tool_base_url = Application.get_env(:membrane_v2v_demo_app, :tool_base_url)
+    tool_api_key = Application.get_env(:membrane_v2v_demo_app, :tool_api_key)
 
-    case Req.post(url,
+    case Req.post(tool_base_url,
            json: request_data,
            headers: [
              {"Authorization",
-              "Bearer pat-624d156c-168e-47f0-8fcc-95c2343460e15eb7f30e-28eb-4363-b9e7-cf18d47f802d"}
+              "Bearer #{tool_api_key}"}
            ]
          ) do
       {:ok, %Req.Response{status: 200, body: body}} ->
-        Membrane.Logger.debug("[OpenAi] Supervisor response: #{inspect(body)}")
+        Membrane.Logger.info("[OpenAi] Supervisor response: #{inspect(body)}")
 
         # Parse the response and create the function call output
         response = %{

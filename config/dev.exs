@@ -86,6 +86,6 @@ config :phoenix_live_view,
 config :swoosh, :api_client, false
 
 # Print debug messages in dev
-config :logger, level: :debug
+config :logger, level: :info
 
 import_config "dev.secret.exs"
