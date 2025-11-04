@@ -10,7 +10,8 @@ defmodule MembraneV2vDemoApp.Application do
     children = [
       MembraneV2vDemoAppWeb.Telemetry,
       # MembraneV2vDemoApp.Repo,
-      {DNSCluster, query: Application.get_env(:membrane_v2v_demo_app, :dns_cluster_query) || :ignore},
+      {DNSCluster,
+       query: Application.get_env(:membrane_v2v_demo_app, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: MembraneV2vDemoApp.PubSub},
       # Start the Finch HTTP client for sending emails
       {Finch, name: MembraneV2vDemoApp.Finch},

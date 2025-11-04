@@ -49,7 +49,10 @@ defmodule MembraneV2vDemoAppWeb.CallLive do
             phx-click="toggle_call"
             class={[
               "px-8 py-4 rounded-lg font-semibold text-lg transition-colors",
-              if(@is_call_active, do: "bg-red-500 hover:bg-red-600 text-white", else: "bg-green-500 hover:bg-green-600 text-white")
+              if(@is_call_active,
+                do: "bg-red-500 hover:bg-red-600 text-white",
+                else: "bg-green-500 hover:bg-green-600 text-white"
+              )
             ]}
           >
             {if @is_call_active, do: "End Call", else: "Start Call"}
@@ -57,17 +60,22 @@ defmodule MembraneV2vDemoAppWeb.CallLive do
         </div>
 
         <div class="text-center text-sm text-gray-600">
-          <p>Call Status: <span class={if @is_call_active, do: "text-green-600 font-semibold", else: "text-gray-500"}>
-            {if @is_call_active, do: "Active", else: "Inactive"}
-          </span></p>
+          <p>
+            Call Status:
+            <span class={
+              if @is_call_active, do: "text-green-600 font-semibold", else: "text-gray-500"
+            }>
+              {if @is_call_active, do: "Active", else: "Inactive"}
+            </span>
+          </p>
         </div>
       </div>
     </div>
 
     <style>
-    #mediaCapture {
-      display: none !important;
-    }
+      #mediaCapture {
+        display: none !important;
+      }
     </style>
     <Membrane.WebRTC.Live.Capture.live_render socket={@socket} capture_id="mediaCapture" />
     <Membrane.WebRTC.Live.Player.live_render socket={@socket} player_id="audioPlayer" />
@@ -83,12 +91,15 @@ defmodule MembraneV2vDemoAppWeb.CallLive do
   end
 
   defp start_call(socket) do
+    sender_id = UUID.uuid4()
+
     if socket.assigns.ingress_signaling && socket.assigns.egress_signaling do
       # Start the pipeline
       {:ok, _, pipeline_pid} =
         Membrane.Pipeline.start_link(Pipeline,
           source_channel: socket.assigns.ingress_signaling,
-          sink_channel: socket.assigns.egress_signaling
+          sink_channel: socket.assigns.egress_signaling,
+          sender_id: sender_id
         )
 
       # Start capture and player

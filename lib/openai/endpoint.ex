@@ -9,7 +9,10 @@ defmodule MembraneOpenAI.OpenAIEndpoint do
   def_input_pad(:input, accepted_format: _any)
   def_output_pad(:output, accepted_format: _any, flow_control: :push)
 
-  def_options(websocket_opts: [])
+  def_options(
+    websocket_opts: [],
+    sender_id: [type: :string, description: "the user id used to log informations"]
+  )
 
   # time in nanoseconds -> 100 millis
   @interval 200_000_000
@@ -22,7 +25,8 @@ defmodule MembraneOpenAI.OpenAIEndpoint do
       ws: ws,
       queue: :queue.new(),
       transcript_logs: [],
-      timer_status: nil
+      timer_status: nil,
+      sender_id: opts.sender_id
     }
 
     {[], state}
@@ -377,29 +381,31 @@ defmodule MembraneOpenAI.OpenAIEndpoint do
       "[OpenAi] call_get_next_response_from_supervisor: #{inspect(tool_calling)}"
     )
 
-    # Prepare the request data according to the curl example
     request_data = %{
       "target" => "mother_agent",
+      "sender" => "tool_call_#{state.sender_id}",
       "data" => %{
-        "relevantContextFromLastUserMessage" => relevant_context_from_last_user_message,
-        "transcriptLogs" =>
-          Jason.encode!(%{
-            "relevantContextFromLastUserMessage" => relevant_context_from_last_user_message,
-            "transcriptLogs" => transcript_logs
-          })
+        "relevant_context_from_last_user_message" => relevant_context_from_last_user_message,
+        "transcript_logs" => Jason.encode!(transcript_logs)
       },
-      "last_user_message" => relevant_context_from_last_user_message
+      "last_user_message" => relevant_context_from_last_user_message,
+      "should_save_input" => false,
+      "should_save_output" => false,
+      "force_create_chat" => false
     }
 
     # Make HTTP POST request to the external service
     tool_base_url = Application.get_env(:membrane_v2v_demo_app, :tool_base_url)
     tool_api_key = Application.get_env(:membrane_v2v_demo_app, :tool_api_key)
 
+    Membrane.Logger.info(
+      "[OpenAi] call_get_next_response_from_supervisor request body: #{inspect(request_data)}"
+    )
+
     case Req.post(tool_base_url,
            json: request_data,
            headers: [
-             {"Authorization",
-              "Bearer #{tool_api_key}"}
+             {"Authorization", "Bearer #{tool_api_key}"}
            ]
          ) do
       {:ok, %Req.Response{status: 200, body: body}} ->

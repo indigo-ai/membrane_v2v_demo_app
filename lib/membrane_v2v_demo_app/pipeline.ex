@@ -18,6 +18,8 @@ defmodule MembraneV2vDemoApp.Call.Pipeline do
   def handle_init(_ctx, opts) do
     require Membrane.Logger
 
+    # pipeline_pid = self()
+
     spec = build_openai_spec(opts)
 
     Membrane.Logger.info("Pipeline spec created with #{length(spec)} elements")
@@ -45,7 +47,10 @@ defmodule MembraneV2vDemoApp.Call.Pipeline do
       |> child(:opus_decoder, %Membrane.Opus.Decoder{sample_rate: 24_000})
 
       # Output path: OpenAI → Browser
-      |> child(:open_ai, %MembraneOpenAI.OpenAIEndpoint{websocket_opts: openai_ws_opts})
+      |> child(:open_ai, %MembraneOpenAI.OpenAIEndpoint{
+        websocket_opts: openai_ws_opts,
+        sender_id: opts[:sender_id]
+      })
       |> child(:raw_audio_parser, %Membrane.RawAudioParser{overwrite_pts?: true})
       |> child(:opus_encoder, Membrane.Opus.Encoder)
       |> via_in(:input, options: [kind: :audio])
